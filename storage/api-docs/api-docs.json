@@ -1,0 +1,384 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Laravel OpenApi Demo Documentation",
+    "description": "L5 Swagger OpenApi description",
+    "contact": {
+      "email": "evgr89@yandex.ru"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8000/api/v1",
+      "description": "Car Rent Projects API Server"
+    }
+  ],
+  "paths": {
+    "/cars": {
+      "get": {
+        "tags": [
+          "Car"
+        ],
+        "summary": "Получение списка всех автомобилей",
+        "description": "Метод возвращает список автомобилей из таблицы cars в формате json",
+        "operationId": "getCarsList",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/rents": {
+      "get": {
+        "tags": [
+          "CarRent"
+        ],
+        "summary": "Получение списка всех занятых автомобилей",
+        "description": "Метод возвращает список занятых автомобилей из таблицы car_rents в формате json",
+        "operationId": "getCarRentsList",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CarRent"
+        ],
+        "summary": "Сохранение аренды автомобиля пользователем",
+        "description": "Возвращает сообщение об успешном сохранении",
+        "operationId": "storeCarRent",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "car_id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/rents/{id}": {
+      "get": {
+        "tags": [
+          "CarRent"
+        ],
+        "summary": "Информация об аренде",
+        "description": "Возвращает информацию об аренде автомобиля по идентификатору",
+        "operationId": "getCarRentById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Car rent id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarRent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "CarRent"
+        ],
+        "summary": "Редактировать существующую аренду",
+        "description": "Возвращает JSON с сообщением об успешном изменении",
+        "operationId": "updateCarRent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Car rent id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "car_id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Unprocessable Content"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "CarRent"
+        ],
+        "summary": "Удаление существующей аренды",
+        "description": "Удаление существующей аренды и возврат JSON с сообщением об успешном удалении",
+        "operationId": "deleteCarRent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Car rent id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Сообщение о выполнении"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Получение списка всех пользователей",
+        "description": "етод возвращает список пользователей из таблицы users в формате json",
+        "operationId": "geUsersList",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Car": {
+        "title": "Car",
+        "description": "Модель автомобиля",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "description": "ID",
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "mark": {
+            "title": "Mark",
+            "description": "Марка автомобиля",
+            "type": "string",
+            "example": "BMW"
+          },
+          "model": {
+            "title": "Model",
+            "description": "Модель автомобиля",
+            "type": "string",
+            "example": "525"
+          },
+          "year": {
+            "title": "Year",
+            "description": "Год выпуска автомобиля",
+            "type": "string",
+            "example": "2001"
+          },
+          "created_at": {
+            "title": "Created at",
+            "description": "Дата создания записи",
+            "type": "string",
+            "format": "datetime",
+            "example": "2020-01-27 17:50:45"
+          },
+          "updated_at": {
+            "title": "Updated at",
+            "description": "Дата обновления записи",
+            "type": "string",
+            "format": "datetime",
+            "example": "2020-01-27 17:50:45"
+          }
+        },
+        "type": "object",
+        "xml": {
+          "name": "Car"
+        }
+      },
+      "CarRent": {
+        "title": "CarRent",
+        "description": "Модель брони автомобиля пользователем",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "description": "Идентификатор брони",
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "user_id": {
+            "title": "user ID",
+            "description": "Идентификатор пользователя",
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "car_id": {
+            "title": "car ID",
+            "description": "Идентификатор автомобиля",
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "created_at": {
+            "title": "Created at",
+            "description": "Дата создания брони",
+            "type": "string",
+            "format": "datetime",
+            "example": "2020-01-27 17:50:45"
+          },
+          "updated_at": {
+            "title": "Updated at",
+            "description": "Дата обновления брони",
+            "type": "string",
+            "format": "datetime",
+            "example": "2020-01-27 17:50:45"
+          },
+          "deleted_at": {
+            "title": "Deleted at",
+            "description": "Дата удаления брони",
+            "type": "string",
+            "format": "datetime",
+            "example": "2020-01-27 17:50:45"
+          }
+        },
+        "type": "object",
+        "xml": {
+          "name": "CarRent"
+        }
+      },
+      "User": {
+        "title": "User",
+        "description": "Модель пользователя",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "description": "Идентификатор пользователя",
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "name": {
+            "title": "Name",
+            "description": "Имя пользователя",
+            "type": "string",
+            "example": "Nathen Romaguera"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "description": "Электронная почта пользователя",
+            "example": "jennie79@example.net"
+          },
+          "email_verified_at": {
+            "title": "Email verified at",
+            "description": "Дата подтверждения почты",
+            "type": "string",
+            "format": "datetime",
+            "example": "2022-06-05 11:05:37"
+          },
+          "password": {
+            "title": "Password",
+            "description": "Пароль пользователя",
+            "type": "string",
+            "format": "hash"
+          },
+          "remember_token": {
+            "title": "Remember token",
+            "description": "Токен пользователя",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created at",
+            "description": "Дата создания пользователя",
+            "type": "string",
+            "format": "datetime",
+            "example": "2020-01-27 17:50:45"
+          },
+          "updated_at": {
+            "title": "Updated at",
+            "description": "Дата изменения пользователя",
+            "type": "string",
+            "format": "datetime",
+            "example": "2020-01-27 17:50:45"
+          }
+        },
+        "type": "object",
+        "xml": {
+          "name": "User"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "CarRent",
+      "description": "API конечная точка всех арендованных автомобилей"
+    },
+    {
+      "name": "Car",
+      "description": "API конечная точка всех автомобилей"
+    },
+    {
+      "name": "User",
+      "description": "API конечная точка всех пользователей"
+    }
+  ]
+}
