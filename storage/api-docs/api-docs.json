@@ -25,11 +25,18 @@
           "Car"
         ],
         "summary": "Получение списка всех автомобилей",
-        "description": "Метод возвращает список автомобилей из таблицы cars в формате json",
-        "operationId": "getCarsList",
+        "description": "Метод возвращает список всех автомобилей",
+        "operationId": "getAllCarsList",
         "responses": {
           "200": {
-            "description": "Successful operation"
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Car"
+                }
+              }
+            }
           }
         }
       }
@@ -39,22 +46,24 @@
         "tags": [
           "CarRent"
         ],
-        "summary": "Получение списка всех занятых автомобилей",
-        "description": "Метод возвращает список занятых автомобилей из таблицы car_rents в формате json",
-        "operationId": "getCarRentsList",
+        "summary": "Получение списка всех активных аренд автомобилей",
+        "description": "Метод возвращает список всех активных аренд автомобилей",
+        "operationId": "getAllActiveRents",
         "responses": {
           "200": {
             "description": "Successful operation"
           }
         }
-      },
+      }
+    },
+    "/rents/new": {
       "post": {
         "tags": [
           "CarRent"
         ],
-        "summary": "Сохранение аренды автомобиля пользователем",
+        "summary": "Создание новой активной аренды автомобиля пользователем",
         "description": "Возвращает сообщение об успешном сохранении",
-        "operationId": "storeCarRent",
+        "operationId": "startRent",
         "requestBody": {
           "required": true,
           "content": {
@@ -74,11 +83,11 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Successful operation"
+          "201": {
+            "description": "Created"
           },
-          "422": {
-            "description": "Unprocessable Content"
+          "400": {
+            "description": "Bad Request"
           }
         }
       }
@@ -88,14 +97,14 @@
         "tags": [
           "CarRent"
         ],
-        "summary": "Информация об аренде",
-        "description": "Возвращает информацию об аренде автомобиля по идентификатору",
-        "operationId": "getCarRentById",
+        "summary": "Информация об активной аренде",
+        "description": "Возвращает информацию об активной аренде автомобиля по идентификатору",
+        "operationId": "getRentById",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "Car rent id",
+            "description": "Уникальный идентификатор аренды автомобиля",
             "required": true,
             "schema": {
               "type": "integer"
@@ -112,21 +121,24 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       },
-      "put": {
+      "patch": {
         "tags": [
           "CarRent"
         ],
-        "summary": "Редактировать существующую аренду",
-        "description": "Возвращает JSON с сообщением об успешном изменении",
-        "operationId": "updateCarRent",
+        "summary": "Редактировать активную аренду",
+        "description": "Возвращает сообщение об успешном изменении аренды",
+        "operationId": "editRent",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "Car rent id",
+            "description": "Уникальный идентификатор аренды автомобиля",
             "required": true,
             "schema": {
               "type": "integer"
@@ -141,10 +153,12 @@
                 "type": "object",
                 "properties": {
                   "user_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Уникальный идентификатор пользователя"
                   },
                   "car_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Уникальный идентификатор автомобиля"
                   }
                 }
               }
@@ -155,8 +169,11 @@
           "200": {
             "description": "Successful operation"
           },
-          "422": {
-            "description": "Unprocessable Content"
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       },
@@ -164,14 +181,14 @@
         "tags": [
           "CarRent"
         ],
-        "summary": "Удаление существующей аренды",
-        "description": "Удаление существующей аренды и возврат JSON с сообщением об успешном удалении",
-        "operationId": "deleteCarRent",
+        "summary": "Удаление активной аренды",
+        "description": "Удаление активной аренды и создание дубликата записи в таблице истории аренд",
+        "operationId": "stopRent",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "Car rent id",
+            "description": "Уникальный идентификатор аренды",
             "required": true,
             "schema": {
               "type": "integer"
@@ -180,7 +197,64 @@
         ],
         "responses": {
           "200": {
-            "description": "Сообщение о выполнении"
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/rents/history": {
+      "get": {
+        "tags": [
+          "CarRentHistory"
+        ],
+        "summary": "Получение списка всех завершенных аренд автомобилей",
+        "description": "Метод возвращает список всех завершенных аренд автомобилей",
+        "operationId": "rentsHistoryList",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/rents/history/{id}": {
+      "get": {
+        "tags": [
+          "CarRentHistory"
+        ],
+        "summary": "Информация о завершенной аренде",
+        "description": "Возвращает информацию о завершенной аренде автомобиля по идентификатору",
+        "operationId": "getHistoryById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Уникальный идентификатор аренды автомобиля",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarRentHistory"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -191,11 +265,18 @@
           "User"
         ],
         "summary": "Получение списка всех пользователей",
-        "description": "етод возвращает список пользователей из таблицы users в формате json",
-        "operationId": "geUsersList",
+        "description": "Метод возвращает список пользователей",
+        "operationId": "getAllUsersList",
         "responses": {
           "200": {
-            "description": "Successful operation"
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
           }
         }
       }
@@ -290,10 +371,48 @@
             "type": "string",
             "format": "datetime",
             "example": "2020-01-27 17:50:45"
+          }
+        },
+        "type": "object",
+        "xml": {
+          "name": "CarRent"
+        }
+      },
+      "CarRentHistory": {
+        "title": "CarRentHistory",
+        "description": "Модель завершенной брони автомобиля пользователем",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "description": "Идентификатор брони",
+            "type": "integer",
+            "format": "int64",
+            "example": 1
           },
-          "deleted_at": {
-            "title": "Deleted at",
-            "description": "Дата удаления брони",
+          "user_id": {
+            "title": "user ID",
+            "description": "Идентификатор пользователя",
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "car_id": {
+            "title": "car ID",
+            "description": "Идентификатор автомобиля",
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "started_at": {
+            "title": "Created at",
+            "description": "Дата создания брони",
+            "type": "string",
+            "format": "datetime",
+            "example": "2020-01-27 17:50:45"
+          },
+          "ended_at": {
+            "title": "Updated at",
+            "description": "Дата завершения брони",
             "type": "string",
             "format": "datetime",
             "example": "2020-01-27 17:50:45"
@@ -370,7 +489,11 @@
   "tags": [
     {
       "name": "CarRent",
-      "description": "API конечная точка всех арендованных автомобилей"
+      "description": "API конечная точка всех активных аренд автомобилей"
+    },
+    {
+      "name": "CarRentHistory",
+      "description": "API конечная точка всех завершенных аренд автомобилей"
     },
     {
       "name": "Car",
