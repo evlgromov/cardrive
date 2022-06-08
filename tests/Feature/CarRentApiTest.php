@@ -17,9 +17,10 @@ class CarRentApiTest extends TestCase
      *
      * @return void
      */
-    public function testIndex()
+    public function testGetAllActiveRents()
     {
         Artisan::call('db:seed');
+
         $response = $this->get('/api/v1/rents');
         $response->assertStatus(200);
         $response->assertJsonStructure(
@@ -44,7 +45,7 @@ class CarRentApiTest extends TestCase
         );
     }
 
-    public function testStore()
+    public function testStartRent()
     {
         Artisan::call('migrate:fresh');
         Artisan::call('db:seed');
@@ -58,8 +59,8 @@ class CarRentApiTest extends TestCase
         ];
 
         
-        $this->json('post', '/api/v1/rents/', $payload)
-            ->assertStatus(200)
+        $this->json('post', '/api/v1/rents/new', $payload)
+            ->assertStatus(201)
             ->assertJsonStructure(
                 [
                     'data' => [
@@ -71,19 +72,16 @@ class CarRentApiTest extends TestCase
         $this->assertDatabaseHas('car_rents', $payload);
     }
 
-    public function testStoreWithEmptyFields()
+    public function testStartRentWithEmptyFields()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-
         $payload = [
             'user_id' => null,
             'car_id'  => null
         ];
 
         
-        $this->json('post', '/api/v1/rents/', $payload)
-            ->assertStatus(422)
+        $this->json('post', '/api/v1/rents/new', $payload)
+            ->assertStatus(400)
             ->assertExactJson(
                 [
                     'errors' => [
@@ -94,21 +92,21 @@ class CarRentApiTest extends TestCase
             );
     }
 
-    public function testStoreWithAlreadyRentedAuto()
+    public function testStartRentWithAlreadyRentedAuto()
     {
         Artisan::call('migrate:fresh');
         Artisan::call('db:seed');
         
-        $this->json('post', '/api/v1/rents/', [
+        $this->json('post', '/api/v1/rents/new', [
             'user_id' => 1,
             'car_id'  => 3
-        ])->assertStatus(200);
+        ])->assertStatus(201);
         
-        $this->json('post', '/api/v1/rents/', [
+        $this->json('post', '/api/v1/rents/new', [
             'user_id' => 2,
             'car_id'  => 3
         ])
-            ->assertStatus(422)
+            ->assertStatus(400)
             ->assertExactJson([
                 'errors' => [
                     'car_id' => ['Автомобилем управляет другой пользователь']
@@ -116,21 +114,21 @@ class CarRentApiTest extends TestCase
             ]);
     }
 
-    public function testStoreWithExistUser()
+    public function testStartRentWithExistUser()
     {
         Artisan::call('migrate:fresh');
         Artisan::call('db:seed');
         
-        $this->json('post', '/api/v1/rents/', [
+        $this->json('post', '/api/v1/rents/new', [
             'user_id' => 1,
             'car_id'  => 3
-        ])->assertStatus(200);
+        ])->assertStatus(201);
         
-        $this->json('post', '/api/v1/rents/', [
+        $this->json('post', '/api/v1/rents/new', [
             'user_id' => 1,
             'car_id'  => 4
         ])
-            ->assertStatus(422)
+            ->assertStatus(400)
             ->assertExactJson([
                 'errors' => [
                     'user_id' => ['Пользователь управляет другим автомобилем']
@@ -138,7 +136,24 @@ class CarRentApiTest extends TestCase
             ]);
     }
 
-    public function testShow()
+    public function testStartRentNotFoundUser()
+    {
+        Artisan::call('migrate:fresh');
+        Artisan::call('db:seed');
+        
+        $this->json('post', '/api/v1/rents/new', [
+            'user_id' => 11,
+            'car_id'  => 4
+        ])
+            ->assertStatus(400)
+            ->assertExactJson([
+                'errors' => [
+                    'user_id' => ['Пользователь не найден']
+                ]
+            ]);
+    }
+
+    public function testGetRentById()
     {
         Artisan::call('migrate:fresh');
         Artisan::call('db:seed');
@@ -173,13 +188,13 @@ class CarRentApiTest extends TestCase
             );
     }
 
-    public function testShowNotFound()
+    public function testGetRentByIdNotFound()
     {
         Artisan::call('migrate:fresh');
         Artisan::call('db:seed');
         
         $this->json('get', '/api/v1/rents/99')
-            ->assertStatus(200)
+            ->assertStatus(404)
             ->assertExactJson(
                 [
                     'data' =>
@@ -192,7 +207,7 @@ class CarRentApiTest extends TestCase
             );
     }
 
-    public function testStoreAndUpdate()
+    public function testEditRent()
     {
         Artisan::call('migrate:fresh');
         Artisan::call('db:seed');
@@ -206,10 +221,10 @@ class CarRentApiTest extends TestCase
         ];
 
         
-        $this->json('post', '/api/v1/rents/', $payload)
-            ->assertStatus(200);
+        $this->json('post', '/api/v1/rents/new', $payload)
+            ->assertStatus(201);
 
-        $this->json('put', '/api/v1/rents/1', [
+        $this->json('patch', '/api/v1/rents/1', [
             'user_id' => 6,
             'car_id'  => 1
         ])
@@ -230,7 +245,7 @@ class CarRentApiTest extends TestCase
 
     }
 
-    public function testStoreAndUpdateButCarIsRented()
+    public function testEditRentButCarIsRented()
     {
         Artisan::call('migrate:fresh');
         Artisan::call('db:seed');
@@ -243,8 +258,8 @@ class CarRentApiTest extends TestCase
             'car_id'  => $car->id
         ];
 
-        $this->json('post', '/api/v1/rents/', $payload)
-            ->assertStatus(200);
+        $this->json('post', '/api/v1/rents/new', $payload)
+            ->assertStatus(201);
 
         $user2 = User::find(2);
         $car2 = Car::find(4);
@@ -254,14 +269,14 @@ class CarRentApiTest extends TestCase
             'car_id'  => $car2->id
         ];
 
-        $this->json('post', '/api/v1/rents/', $payload2)
-            ->assertStatus(200);
+        $this->json('post', '/api/v1/rents/new', $payload2)
+            ->assertStatus(201);
 
-        $this->json('put', '/api/v1/rents/1', [
+        $this->json('patch', '/api/v1/rents/1', [
             'user_id' => 1,
             'car_id'  => 4
         ])
-            ->assertStatus(422)
+            ->assertStatus(400)
             ->assertExactJson(
                 [
                     'errors' =>
@@ -273,7 +288,7 @@ class CarRentApiTest extends TestCase
 
     }
 
-    public function testDelete()
+    public function testStopRent()
     {
         Artisan::call('migrate:fresh');
         Artisan::call('db:seed');
@@ -297,8 +312,12 @@ class CarRentApiTest extends TestCase
                 ]
             );
 
-            $this->assertDatabaseHas('car_rents', [
-               
+            $this->assertDeleted('car_rents', [
+                'id' => $rent->id
+            ]);
+
+            $this->assertDatabaseHas('car_rent_histories', [
+                'user_id' => $rent->user_id,
             ]);
 
     }

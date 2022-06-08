@@ -38,8 +38,8 @@ class CarRentRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => ['bail', 'required', 'numeric', new UserUnique()],
-            'car_id' => ['bail', 'required', 'numeric', new CarUnique()],
+            'user_id' => ['bail', 'required', 'numeric', new UserUnique(), 'exists:users,id',],
+            'car_id' => ['bail', 'required', 'numeric', new CarUnique(), 'exists:cars,id'],
         ];
     }
 
@@ -47,6 +47,7 @@ class CarRentRequest extends FormRequest
     {
         return [
             '*.numeric' => 'Поле :attribute должно быть числом',
+            '*.exists' => ':attribute не найден',
             '*.required' => 'Поле :attribute обязательное для заполнения',
         ];
     }
