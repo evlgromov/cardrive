@@ -12,15 +12,17 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class CarRentApiTest extends TestCase
 {
     use RefreshDatabase;
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+
+    public function setUp():void {
+        parent::setUp();
+
+        Artisan::call('migrate:fresh');
+        Artisan::call('db:seed');
+    }
+
+
     public function testGetAllActiveRents()
     {
-        Artisan::call('db:seed');
-
         $response = $this->get('/api/v1/rents');
         $response->assertStatus(200);
         $response->assertJsonStructure(
@@ -47,9 +49,6 @@ class CarRentApiTest extends TestCase
 
     public function testStartRent()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-
         $user = User::find(1);
         $car = Car::find(5);
 
@@ -94,9 +93,6 @@ class CarRentApiTest extends TestCase
 
     public function testStartRentWithAlreadyRentedAuto()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-        
         $this->json('post', '/api/v1/rents/new', [
             'user_id' => 1,
             'car_id'  => 3
@@ -115,10 +111,7 @@ class CarRentApiTest extends TestCase
     }
 
     public function testStartRentWithExistUser()
-    {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-        
+    {   
         $this->json('post', '/api/v1/rents/new', [
             'user_id' => 1,
             'car_id'  => 3
@@ -138,9 +131,6 @@ class CarRentApiTest extends TestCase
 
     public function testStartRentNotFoundUser()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-        
         $this->json('post', '/api/v1/rents/new', [
             'user_id' => 11,
             'car_id'  => 4
@@ -155,9 +145,6 @@ class CarRentApiTest extends TestCase
 
     public function testGetRentById()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-
         $user = User::find(1);
         $car = Car::find(5);
 
@@ -190,9 +177,6 @@ class CarRentApiTest extends TestCase
 
     public function testGetRentByIdNotFound()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-        
         $this->json('get', '/api/v1/rents/99')
             ->assertStatus(404)
             ->assertExactJson(
@@ -209,9 +193,6 @@ class CarRentApiTest extends TestCase
 
     public function testEditRent()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-
         $user = User::find(1);
         $car = Car::find(5);
 
@@ -247,9 +228,6 @@ class CarRentApiTest extends TestCase
 
     public function testEditRentButCarIsRented()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-
         $user = User::find(1);
         $car = Car::find(5);
 
@@ -290,9 +268,6 @@ class CarRentApiTest extends TestCase
 
     public function testStopRent()
     {
-        Artisan::call('migrate:fresh');
-        Artisan::call('db:seed');
-
         $user = User::find(1);
         $car = Car::find(5);
 
